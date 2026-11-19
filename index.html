@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta charset="utf-8">
+<title>Small Batch Kitchen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Single-look game: a daylight kitchen rendered in 3D with a thin 2D overlay for notes and labels. */
+:root{--wall:#e9e5df;--ink:#3b3631;color-scheme:light}
+html,body{height:100%;margin:0;background:var(--wall);overflow:hidden;color:var(--ink)}
+canvas{position:fixed;inset:0;display:block;width:100%;height:100%;outline:none}
+#c{touch-action:none}
+</style>
+<canvas id="gl" aria-hidden="true"></canvas>
+<canvas id="c" tabindex="0" aria-label="3D kitchen baking simulator. Use the mouse to pick up and use ingredients and tools; scroll to switch between the counter view and leaning over the counter."></canvas>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="game.js"></script>
+<script src="items.js"></script>
+<script src="scene.js"></script>
+<script src="core.js"></script>
+<script src="world3d.js"></script>
+<script src="play3d.js"></script>
+<script src="decor3d.js"></script>
+<script src="notes.js"></script>
+<script src="more.js"></script>
+<script src="pastry.js"></script>
+<script src="skip.js"></script>
+
+</body></html>
