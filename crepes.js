@@ -20,14 +20,51 @@ PROF.crepemaker = { outer: [[0, 0], [0.17, 0], [0.17, CRP_TOP + 0.002]], inner: 
 if (typeof volTable === 'function') try { PROF.crepemaker.vol = volTable(PROF.crepemaker.inner); } catch (e) { }
 PAN_NAME.crepemaker = 'crêpe maker';
 
-const CRP_LACE = canvTex(256, 256, (c, w, h) => {
-  c.fillStyle = '#fff'; c.fillRect(0, 0, w, h);
-  for (let i = 0; i < 900; i++) { const x = Math.random() * w, y = Math.random() * h, r = 1 + Math.random() * 5; c.fillStyle = `rgba(120,70,20,${0.08 + Math.random() * 0.2})`; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); }
-  for (let i = 0; i < 40; i++) { c.strokeStyle = 'rgba(110,60,20,.12)'; c.lineWidth = 1 + Math.random() * 2; c.beginPath(); c.arc(w / 2, h / 2, 10 + i * 3 + Math.random() * 3, 0, TAU); c.stroke(); }
-});
-const CRP_RAW = [242, 228, 188], CRP_MATTE = [236, 214, 160], CRP_GOLD = [212, 150, 72], CRP_BURNT = [92, 54, 26];
-function crepeCol(c) { if (c < 1) return mixc(CRP_RAW, CRP_GOLD, sstep(0.15, 1, c)); return mixc(CRP_GOLD, CRP_BURNT, sstep(1.25, 2, c)); }
-function topCol(cr) { if (cr.side === 0) return mixc(CRP_RAW, CRP_MATTE, sstep(0.1, 0.8, cr.cook[0])); return crepeCol(cr.cook[0]); }
+// golden cooked side: honey-coloured lacy browning that gets denser towards a crisp rim
+function crepeTexture(golden) {
+  return canvTex(512, 512, (c, w, h) => {
+    const cx = w / 2, cy = h / 2, R = w / 2;
+    let g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
+    if (golden) { g.addColorStop(0, '#e9b665'); g.addColorStop(0.6, '#e2a656'); g.addColorStop(0.9, '#cf8a3c'); g.addColorStop(1, '#a9682a'); }
+    else { g.addColorStop(0, '#fbf0d4'); g.addColorStop(0.85, '#f6e6c0'); g.addColorStop(1, '#ecd3a0'); }
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    if (golden) {
+      // lace: clusters of soft caramel spots with lighter veins between them
+      for (let i = 0; i < 1400; i++) {
+        const rr = Math.sqrt(Math.random()) * R * 0.97, a = Math.random() * TAU, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+        const sz = rnd(5, 16) * (0.7 + 0.5 * rr / R), al = rnd(0.28, 0.6) * (0.6 + 0.6 * rr / R);
+        const sg = c.createRadialGradient(x, y, 0, x, y, sz); sg.addColorStop(0, `rgba(140,72,22,${al})`); sg.addColorStop(0.55, `rgba(160,88,30,${al * 0.65})`); sg.addColorStop(1, 'rgba(170,100,40,0)');
+        c.fillStyle = sg; c.beginPath(); c.arc(x, y, sz, 0, TAU); c.fill();
+      }
+      c.strokeStyle = 'rgba(255,236,190,.35)'; c.lineWidth = 1.5;
+      for (let i = 0; i < 160; i++) { const rr = Math.sqrt(Math.random()) * R * 0.9, a = Math.random() * TAU, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; c.beginPath(); c.moveTo(x, y); for (let k = 0; k < 4; k++) c.lineTo(x + rnd(-14, 14), y + rnd(-14, 14)); c.stroke(); }
+      // butter sheen highlights
+      for (let i = 0; i < 60; i++) { const x = rnd(0, w), y = rnd(0, h), sz = rnd(10, 30), sg = c.createRadialGradient(x, y, 0, x, y, sz); sg.addColorStop(0, 'rgba(255,245,215,.18)'); sg.addColorStop(1, 'rgba(255,245,215,0)'); c.fillStyle = sg; c.beginPath(); c.arc(x, y, sz, 0, TAU); c.fill(); }
+      // crisp lacy rim
+      c.lineWidth = 6; c.strokeStyle = 'rgba(178,108,44,.55)'; c.beginPath(); c.arc(cx, cy, R - 4, 0, TAU); c.stroke();
+    } else {
+      // the top side while cooking: pale and matte with tiny bubbles
+      for (let i = 0; i < 500; i++) { const rr = Math.sqrt(Math.random()) * R * 0.95, a = Math.random() * TAU, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; c.fillStyle = `rgba(214,184,128,${rnd(0.08, 0.2)})`; c.beginPath(); c.arc(x, y, rnd(1, 3), 0, TAU); c.fill(); }
+    }
+  });
+}
+const CRP_LACE = crepeTexture(true), CRP_PALE = crepeTexture(false);
+// colour multiplier on top of the texture: white when perfect, darker when overcooked
+function crepeTint(c) { if (c < 1.2) return [244, 226, 200]; return mixc([244, 226, 200], [110, 70, 44], sstep(1.2, 2, c)); }
+function crepeMat(c, pale) { return new THREE.MeshPhysicalMaterial({ map: pale ? CRP_PALE : CRP_LACE, color: new THREE.Color(rgb(crepeTint(c))), roughness: 0.62, sheen: 0.18, sheenColor: new THREE.Color(0xffd890) }); }
+const CRP_EDGE = new THREE.MeshStandardMaterial({ color: 0xe8be7c, roughness: 0.6 });
+function crepeCol(c) { return crepeTint(c); }
+function topCol(cr) { return cr.side === 0 ? [255, 252, 246] : crepeTint(cr.cook[0]); }
+// a crêpe folded into quarters: a puffy wedge with soft edges, its tip at the crêpe's centre
+function foldedGeo(r) {
+  const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(r, 0); sh.absarc(0, 0, r, 0, Math.PI / 2, false); sh.lineTo(0, 0);
+  const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.003, bevelEnabled: true, bevelThickness: 0.0016, bevelSize: 0.0022, bevelSegments: 3, curveSegments: 24 });
+  const uv = geo.attributes.uv, pos = geo.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / (2 * r) + 0.5, pos.getY(i) / (2 * r) + 0.5);
+  // drape it a little so it doesn't look like a flat slice
+  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), y = pos.getY(i), rho = Math.hypot(x, y) / r, phi = Math.atan2(y, x); pos.setZ(i, pos.getZ(i) + 0.0026 * Math.sin(phi * 4) * rho + 0.002 * rho * rho); }
+  geo.computeVertexNormals(); geo.rotateX(-Math.PI / 2); return geo;
+}
 
 function crepeModel(it) {
   const g = new THREE.Group(); it.parts = {};
@@ -38,7 +75,7 @@ function crepeModel(it) {
     const rim = mesh(new THREE.TorusGeometry(CRP_R + 0.008, 0.004, 8, 48), MAT.chrome, 0, CRP_TOP, 0); rim.rotation.x = Math.PI / 2; g.add(rim);
     const btn = mesh(new THREE.BoxGeometry(0.03, 0.018, 0.012), new THREE.MeshStandardMaterial({ color: 0xb8352a, roughness: 0.4 }), 0.05, 0.026, 0.172); btn.userData.ctrl = 'crepeBtn'; btn.userData.noItem = true; g.add(btn); it.parts.btn = btn;
     const light = mesh(new THREE.SphereGeometry(0.005, 10, 8), new THREE.MeshStandardMaterial({ color: 0x552018, emissive: 0x000000 }), -0.04, 0.03, 0.172); g.add(light); it.parts.light = light;
-    const crepe = mesh(new THREE.CylinderGeometry(1, 1, 1, 48), new THREE.MeshStandardMaterial({ color: 0xf2e4bc, roughness: 0.8, map: CRP_LACE }), 0, CRP_TOP + 0.001, 0, false); crepe.visible = false; g.add(crepe); it.parts.crepe = crepe;
+    const crepe = mesh(new THREE.CylinderGeometry(1, 1, 1, 48), [CRP_EDGE, crepeMat(0.9, true), crepeMat(0.9, false)], 0, CRP_TOP + 0.001, 0, false); crepe.visible = false; g.add(crepe); it.parts.crepe = crepe;
     const puddle = mesh(new THREE.CylinderGeometry(1, 1, 1, 32), new THREE.MeshPhysicalMaterial({ color: 0xf2e4bc, roughness: 0.25, clearcoat: 0.6 }), 0, CRP_TOP + 0.002, 0, false); puddle.visible = false; g.add(puddle); it.parts.puddle = puddle;
   } else if (it.kind === 'spreader') {
     const wood = MAT.wood || new THREE.MeshStandardMaterial({ color: 0xc89a62, roughness: 0.6 });
@@ -113,7 +150,7 @@ tick3 = function (dt) {
       P.puddle.visible = wet; P.crepe.visible = !wet;
       P.puddle.scale.set(r, thick, r); P.puddle.position.y = CRP_TOP + thick / 2 + 0.0005;
       P.crepe.scale.set(r, Math.max(0.0012, thick * 0.6), r); P.crepe.position.y = CRP_TOP + 0.0012;
-      P.crepe.material.color.set(rgb(topCol(cr)));
+      const topM = P.crepe.material[1], wantMap = cr.side === 0 ? CRP_PALE : CRP_LACE; if (topM.map !== wantMap) { topM.map = wantMap; topM.needsUpdate = true; } topM.color.set(rgb(topCol(cr))); P.crepe.material[2].color.set(rgb(crepeTint(cr.cook[cr.side === 0 ? 0 : 1])));
       if (Math.random() < dt * 4 && hot) parts.push({ type: 'steam', p: V3(mk.p.x + (Math.random() - 0.5) * r, mk.p.y + CRP_TOP + 0.01, mk.p.z + (Math.random() - 0.5) * r), v: V3(0, 0.04, 0), life: 1.2 });
       if (hot && Math.random() < dt * 3) sNoise(0.15, 3000, 0.6, 0.02, 'highpass');
       if (cr.cook[cr.side] > 1.5 && !cr.warned) { cr.warned = true; say('It’s starting to burn!', 2); }
@@ -163,7 +200,7 @@ function liftCrepe(mk, pl) {
   const cr = mk.cr, m = mk.m; mk.m = new Mix(); mk.cr = null;
   const rec = { g: m.total(), spread: cr.spread, cook0: cr.cook[0], cook1: cr.cook[1], cream: false };
   // a short flight from the maker to the plate
-  const disc = mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.0015, 32), new THREE.MeshStandardMaterial({ color: new THREE.Color(rgb(crepeCol(rec.cook0))), roughness: 0.8, map: CRP_LACE }), 0, 0, 0, false); scene.add(disc);
+  const disc = mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.0015, 32), [CRP_EDGE, crepeMat(rec.cook0), crepeMat(rec.cook1)], 0, 0, 0, false); scene.add(disc);
   const a = mk.p.clone().add(V3(0, CRP_TOP + 0.01, 0)), b0 = V3(pl.p.x, hostTop(pl) + 0.03, pl.p.z); let t = 0;
   CRP.flights = CRP.flights || []; CRP.flights.push({ disc, a, b: b0, t, done: () => addCrepe(pl, rec, m) });
   SFX.plop();
@@ -210,13 +247,14 @@ rebuildBake = function (b) {
   const tag = m => { m.traverse(o => { if (o.isMesh) o.userData.item = b; }); g.add(m); return m; };
   const cs = b.crepes || [];
   if (b.fold) {
-    cs.forEach((c, i) => { const r = 0.06 + 0.035 * c.spread, w = mesh(new THREE.CylinderGeometry(r, r, 0.004, 20, 1, false, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: new THREE.Color(rgb(crepeCol(c.cook0))), roughness: 0.8, map: CRP_LACE }), 0, 0.002 + i * 0.0025, 0); w.rotation.y = i * Math.min(0.75, 3.4 / Math.max(1, cs.length)) - 0.6; w.position.x = Math.cos(-w.rotation.y - Math.PI / 4) * 0.012; w.position.z = Math.sin(-w.rotation.y - Math.PI / 4) * 0.012; tag(w); });
-    b.topY = 0.004 + cs.length * 0.0025;
+    b.foldSpots = []; const n = cs.length, step = Math.min(0.75, 3.4 / Math.max(1, n)), mid = -((n - 1) * step / 2 - 0.6) - Math.PI / 4; b.foldOff = { x: -Math.cos(mid) * 0.035, z: -Math.sin(mid) * 0.035 };
+    cs.forEach((c, i) => { const r = 0.07 + 0.025 * c.spread, w = mesh(foldedGeo(r), crepeMat(Math.max(c.cook0, c.cook1)), 0, 0.0035 + i * 0.0032, 0); w.rotation.set(0.04, i * step - 0.6, 0); const a = -w.rotation.y - Math.PI / 4; w.position.x = -Math.cos(a) * 0.022 + b.foldOff.x; w.position.z = -Math.sin(a) * 0.022 + b.foldOff.z; tag(w); w.updateMatrix(); w.geometry.computeBoundingBox(); const ctr = w.geometry.boundingBox.getCenter(V3(0, 0, 0)).applyMatrix4(w.matrix); (b.foldSpots = b.foldSpots || [])[i] = { x: ctr.x, z: ctr.z, tx: w.position.x, tz: w.position.z }; });
+    b.topY = 0.008 + cs.length * 0.0032;
   } else {
     let y = 0;
     cs.forEach((c, i) => {
       const r = Math.min(0.1, 0.07 + 0.03 * c.spread);
-      tag(mesh(new THREE.CylinderGeometry(r, r, 0.0018, 40), new THREE.MeshStandardMaterial({ color: new THREE.Color(rgb(crepeCol(i === cs.length - 1 ? c.cook0 : Math.max(c.cook0, c.cook1) * 0.9))), roughness: 0.82, map: CRP_LACE }), 0, y + 0.0009, 0)); y += 0.0018;
+      tag(mesh(new THREE.CylinderGeometry(r, r, 0.0018, 48), [CRP_EDGE, crepeMat(c.cook0), crepeMat(c.cook1)], 0, y + 0.0009, 0)); y += 0.0018;
       if (c.cream) { tag(mesh(new THREE.CylinderGeometry(r * 0.995, r * 0.995, 0.0032, 40), CREAMMAT, 0, y + 0.0016, 0)); y += 0.0032; }
     });
     if (b.creamTop > 0) { const r = 0.094 * Math.min(1, 0.4 + b.creamTop / 10); tag(mesh(new THREE.CylinderGeometry(r, r, 0.002, 40), CREAMMAT, 0, y + 0.001, 0)); }

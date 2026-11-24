@@ -101,7 +101,7 @@ function drizzleRender(b) {
   const G = b.drizG; while (G.children.length) { const c = G.children.pop(); c.geometry && c.geometry.dispose(); }
   for (const s of b.drizzle || []) {
     const mat = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(rgb(ING[s.type].c)), roughness: 0.12, clearcoat: 1 });
-    if (s.pts.length >= 2) { const m = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(s.pts.map(p => V3(p.x, p.y, p.z))), Math.max(8, s.pts.length * 3), 0.0024, 6, false), mat, 0, 0, 0, false); m.userData.item = b; G.add(m); }
+    if (s.pts.length >= 2) { const m = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(s.pts.map(p => V3(p.x, p.y, p.z))), Math.max(8, s.pts.length * 3), b.shape === 'crepes' ? 0.0014 : 0.0024, 8, false), mat, 0, 0, 0, false); m.userData.item = b; G.add(m); }
     if ((s.drips || []).length >= 6 && b.shape === 'round') { const top = mesh(new THREE.CylinderGeometry(b.dims.rx * 0.97, b.dims.rx * 0.97, 0.004, 48), mat, 0, (b.topY || b.h) + 0.003, 0, false); top.userData.item = b; G.add(top); }
     for (const d of s.drips || []) { const m = mesh(new THREE.CapsuleGeometry(0.0035, d.len, 4, 8), mat, d.x, d.y - d.len / 2, d.z, false); m.userData.item = b; G.add(m); }
   }

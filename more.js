@@ -465,7 +465,7 @@ function drawBook() {
     const col = n < 3 ? -1 : 1, row = n % 3, x0 = col < 0 ? -W / 2 + 24 : 24, y0 = -H / 2 + 76 + row * 172, w = W / 2 - 48, h = 160;
     const hv = inH(x0, y0, x0 + w, y0 + h); if (hv) BOOK.hover = R;
     if (hv || recipe === R) { ctx.fillStyle = recipe === R ? 'rgba(76,138,74,.12)' : 'rgba(196,99,44,.1)'; rr(x0 - 6, y0 - 4, w + 12, h + 4, 10); ctx.fill(); }
-    ctx.save(); ctx.translate(x0 + 44, y0 + 54); ctx.scale(1.15, 1.15); recipeIcon(R.product); ctx.restore();
+    ctx.save(); ctx.translate(x0 + 44, y0 + 62); ctx.scale(1.15, 1.15); recipeIcon(R.product, R); ctx.restore();
     ctx.textAlign = 'left'; ctx.fillStyle = '#2d3a4f'; ctx.font = '700 28px Caveat, cursive'; ctx.fillText(R.name, x0 + 96, y0 + 30);
     ctx.font = '600 10.5px Inter, system-ui, sans-serif'; ctx.fillStyle = R.kind === 'cold' ? '#3f86a8' : '#c4632c';
     const tag = `${R.country.toUpperCase()} · ${R.kind === 'cold' ? 'COLD' : 'HOT'} · ${['', 'EASY', 'MEDIUM', 'HARD'][R.level || 2]}`; ctx.fillText(tag, x0 + 96, y0 + 50);
