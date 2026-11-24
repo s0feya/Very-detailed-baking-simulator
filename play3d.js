@@ -554,10 +554,16 @@ function tick3(dt) {
   }
   setHum(MX.speed);
   // oven
-  OV.light = OV.set > 0 ? 1 : 0; OV.heating = OV.set >= 30 && OV.temp < OV.set - 1;
-  if (OV.heating) OV.temp = Math.min(OV.set, OV.temp + (OVN.open > 0.5 ? 0.15 : 0.6) * dtG);
+  OV.light = OV.set > 0 ? 1 : 0;
+  // heat loss first, then the thermostat tops it back up, so a closed oven holds its set temperature exactly
   OV.temp += -(OV.temp - 22) * (OVN.open > 0.5 ? 0.012 : 0.0008) * dtG;
-  if (!OV.heating && OV.set >= 30 && OV.temp > OV.set + 1) OV.temp -= Math.min(OV.temp - OV.set, 0.05 * dtG);
+  if (OV.set >= 30 && OV.temp < OV.set) OV.temp = Math.min(OV.set, OV.temp + (OVN.open > 0.5 ? 0.15 : 0.6) * dtG);
+  if (OV.set >= 30 && OV.temp > OV.set + 1) OV.temp -= Math.min(OV.temp - OV.set, 0.05 * dtG);
+  // "preheating" latches off once hot and only comes back after a real drop or a new setting (no flicker around the set point)
+  if (OV.set !== OV.lastSet) { OV.lastSet = OV.set; OV.preheated = OV.temp >= OV.set - 1; }
+  if (OV.set >= 30 && OV.temp >= OV.set - 1) OV.preheated = true;
+  if (OV.set < 30 || OV.temp < OV.set - 12) OV.preheated = false;
+  OV.heating = OV.set >= 30 && !OV.preheated;
   if (OV.timer > 0) { OV.timer = Math.max(0, OV.timer - dtG); if (OV.timer === 0) { SFX.ding(); say('Ding! The oven timer is up.', 4); } }
   for (const it of [...items, ...doughs]) {
     const inOven = it.zone === 'oven', env = inOven ? OV.temp : 22, rate = inOven ? 0.8 : it.zone === 'rack' ? 0.16 : it.zone === 'fridge' ? 0.15 : 0.07;
