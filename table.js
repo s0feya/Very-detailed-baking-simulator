@@ -184,7 +184,7 @@ function startTable(b) {
   const S = TABLE.stand; while (S.children.length) S.remove(S.children[0]);
   let standH;
   if (b.shape === 'loaf') { const board = mesh(new THREE.BoxGeometry(0.34, 0.02, 0.17), new THREE.MeshStandardMaterial({ color: 0xb98a56, roughness: 0.55, map: TX.speck }), 0, T + 0.01, -0.02); S.add(board); standH = 0.02; }
-  else { const porc = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.12, clearcoat: 1 }); S.add(mesh(new THREE.CylinderGeometry(0.045, 0.07, 0.06, 32), porc, 0, T + 0.03, -0.02)); S.add(mesh(new THREE.CylinderGeometry(0.14, 0.13, 0.012, 64), porc, 0, T + 0.066, -0.02)); standH = 0.072; }
+  else { const porc = new THREE.MeshPhysicalMaterial({ color: 0xcfe0d8, roughness: 0.12, clearcoat: 1 }); S.add(mesh(new THREE.CylinderGeometry(0.045, 0.07, 0.06, 32), porc, 0, T + 0.03, -0.02)); S.add(mesh(new THREE.CylinderGeometry(0.14, 0.13, 0.012, 64), porc, 0, T + 0.066, -0.02)); standH = 0.072; }
   // move the bake
   b.host = null; b.zone = 'table'; b.hostOff = V3(0, 0, 0); b.yaw = 0; b.tilt = 0;
   b.p.set(TABLE.P.x, T + standH, TABLE.P.z - 0.02); b.root.visible = true;
@@ -197,7 +197,7 @@ function startTable(b) {
   if (TABLE.faceG) b.root.remove(TABLE.faceG); TABLE.faceG = new THREE.Group(); b.root.add(TABLE.faceG);
   if (TABLE.sliceG) { scene.remove(TABLE.sliceG); TABLE.sliceG = null; }
   TABLE.tex = canCut(b) && b.shape !== 'loaf' ? crossTex(b, cakeR(b), cakeH(b)) : null;
-  tSay(b.shape === 'loaf' ? 'Pick up the bread knife and saw across the loaf.' : 'Pick up the cake knife, then drag from the middle of the cake out to the edge.', 5);
+  tSay(b.shape === 'loaf' ? 'Pick up the bread knife from the napkin to slice the loaf.' : 'Pick up the cake knife from the napkin to cut the cake.', 5);
   SFX.ding && SFX.click();
 }
 function cakeR(b) { const frosted = b.shape === 'round' && (covAvg(b) > 0.25 || sideAvg(b) > 0.25); return b.shape === 'crepes' ? b.dims.rx * 0.95 : b.dims.rx + (frosted ? 0.004 : 0); }
@@ -334,7 +334,7 @@ function tableDown() {
     putKnifeDown(); return;
   }
   const kh = tableRayHit(TABLE.knives.map(x => x.g));
-  if (kh) { TABLE.knife = TABLE.knives.find(x => x.kind === kh.object.userData.knife); SFX.clink && SFX.clink(); const n = { cake: 'Cake knife', bread: 'Bread knife', butter: 'Butter knife' }[TABLE.knife.kind]; tSay(`${n} in hand.` + (TABLE.knife.kind === 'butter' ? ' Dip it in a spread.' : b.shape === 'loaf' ? ' Press and saw across the loaf.' : ' Press and drag from the middle out to the edge.'), 3); return; }
+  if (kh) { TABLE.knife = TABLE.knives.find(x => x.kind === kh.object.userData.knife); SFX.clink && SFX.clink(); const n = { cake: 'Cake knife', bread: 'Bread knife', butter: 'Butter knife' }[TABLE.knife.kind]; tSay(`${n} in hand.` + (TABLE.knife.kind === 'butter' ? ' Dip it in a spread.' : b.shape === 'loaf' ? ' Move to aim, click to slice on the dotted line.' : ' Point it where you want to cut, then click.'), 3); return; }
   const sh = tableRayHit(TABLE.sups.map(s => s.g));
   if (sh && sh.object.userData.sup) { const s = sh.object.userData.sup; if (SUPS[s].spread && b.shape === 'loaf') { tSay('Pick up the butter knife to spread it.', 2.5); return; } addDollop(s); return; }
   if (b.shape === 'loaf' && overBake()) { if (!takeSlice()) tSay('Slice it first with the bread knife.', 2.5); return; }

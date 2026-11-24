@@ -34,6 +34,12 @@ const CRUMB_TEX = canvTex(256, 256, (g, w, h) => {
 }, [14, 14]);
 CRUMB_TEX.wrapS = CRUMB_TEX.wrapT = THREE.RepeatWrapping;
 
+// where the loaf has been cut (local x, from the +x end inwards); older saves just count slices
+function loafCuts(b) {
+  b.cutsX = b.cutsX || [];
+  while (b.cutsX.length < (b.sliced || 0)) { const last = b.cutsX.length ? b.cutsX[b.cutsX.length - 1] : b.dims.rx; b.cutsX.push(last - 0.022); }
+  return b.cutsX;
+}
 /* ---------- the sandwich-loaf cross-section ---------- */
 function loafShape(W2, h) {
   const s = new THREE.Shape(), r = 0.008, sh = h * 0.58, ov = 0.005;
@@ -64,14 +70,16 @@ rebuildBake = function (b) {
   const crustSide = crustM.clone(); crustSide.map = TX.speck; crustSide.side = THREE.DoubleSide;
   const crumbM = new THREE.MeshStandardMaterial({ color: new THREE.Color(rgb(mixc(crumbCol(b), [255, 246, 222], 0.35))), map: CRUMB_TEX, roughness: 0.95 });
   const tag = m => { m.traverse(o => { if (o.isMesh) o.userData.item = b; }); g.add(m); return m; };
-  const shape = loafShape(d.rz, d.h), T = 0.022, n = b.sliced || 0;
-  const off = (b.cutOff || 0) * T, bodyEnd = d.rx - off - n * T;
+  const shape = loafShape(d.rz, d.h), cuts = loafCuts(b), n = cuts.length, taken = Math.min(n, b.taken || 0);
+  const edge = k => k === 0 ? d.rx : cuts[k - 1];   // slice k lies between edge(k) and edge(k-1), counted from the end
+  const bodyEnd = edge(n);
   // the uncut part of the loaf, crust on its outer end
   tag(loafBlock(shape, -d.rx, bodyEnd, n ? crumbM : crustM, crustM));
   tag(crustCap(shape, -d.rx - 0.0016, crustSide, -1));
-  // each slice leans a little further away and shows its crumb
-  for (let k = 1; k <= n; k++) {
-    const x0 = d.rx - off - k * T, gap = (n - k + 1) * 0.008 + (k === 1 ? 0.012 : 0), lean = -(k === 1 ? 0.42 : 0.04 + 0.025 * k);
+  // each slice (as thick as it was cut) leans a little further away and shows its crumb
+  for (let k = taken + 1; k <= n; k++) {
+    const x0 = edge(k), T = edge(k - 1) - edge(k), first = k === taken + 1;
+    const gap = (n - k + 1) * 0.008 + (first ? 0.012 : 0), lean = -(first ? 0.42 : 0.04 + 0.025 * (k - taken));
     const piv = new THREE.Group(); piv.position.x = x0 + T + gap; piv.rotation.z = lean;
     const s = loafBlock(shape, -T + 0.0015, -0.0015, crumbM, crustM); piv.add(s);
     if (k === 1) { const cap = crustCap(shape, 0.0005, crustSide, 1); piv.add(cap); }
