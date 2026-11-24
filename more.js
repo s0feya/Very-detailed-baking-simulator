@@ -333,7 +333,7 @@ tick3 = function (dt) {
   // chilling
   if (recipe && (recipe.product === 'chilled' || recipe.product === 'mousse')) for (const it of items) {
     if (!it.m || it.m.total() < 50 || !((it.m.g.cream || 0) + (it.m.g.creamcheese || 0) > 0)) continue;
-    if (it.zone === 'fridge' && it.temp < 10) it.m.chill = Math.min(1.3, (it.m.chill || 0) + dtMin / recipe.chill);
+    if (it.zone === 'fridge') it.m.chill = Math.min(1.3, (it.m.chill || 0) + dtMin / recipe.chill); // matches the clock: 15 min in the fridge = 15 min on the recipe
     if (it.kind === 'tin' && (it.m.chill || 0) >= 0.6 && !it.bake) it.bake = { type: 'chilled', b: 1, brown: 0, rise: 0, spread: 0, ideal: 0, time: 1, tsum: 0, ttime: 0 };
   }
   // cream-cheese mixes whip in the stand mixer too

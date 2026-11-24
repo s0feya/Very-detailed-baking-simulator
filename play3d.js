@@ -566,8 +566,8 @@ function tick3(dt) {
   OV.heating = OV.set >= 30 && !OV.preheated;
   if (OV.timer > 0) { OV.timer = Math.max(0, OV.timer - dtG); if (OV.timer === 0) { SFX.ding(); say('Ding! The oven timer is up.', 4); } }
   for (const it of [...items, ...doughs]) {
-    const inOven = it.zone === 'oven', env = inOven ? OV.temp : 22, rate = inOven ? 0.8 : it.zone === 'rack' ? 0.16 : it.zone === 'fridge' ? 0.15 : 0.07;
-    it.temp += (env - it.temp) * (1 - Math.exp(-dtMin * rate)); if (it.zone === 'fridge') it.temp += (5 - it.temp) * (1 - Math.exp(-dtMin * 0.15));
+    const inOven = it.zone === 'oven', env = inOven ? OV.temp : it.zone === 'fridge' ? 4 : 22, rate = inOven ? 0.8 : it.zone === 'rack' ? 0.16 : it.zone === 'fridge' ? 0.3 : 0.07;
+    it.temp += (env - it.temp) * (1 - Math.exp(-dtMin * rate));
     const m = it.kind === 'tray' ? null : it.m;
     if (m && m.form() === 'dough' && m.g.yeast > 0 && m.mix > 0.6 && it.temp < 50) { const yf = clamp((m.g.yeast / (m.g.flour || 1)) / 0.0175, 0, 1.6) * (m.g.salt > (m.g.flour || 1) * 0.04 ? 0.6 : 1); const loc = it.zone === 'fridge' ? 0.1 : (inOven && it.temp > 26) ? 1.4 : 1; m.proof += yf / 45 * dtMin * loc; }
     if (DEF[it.kind]?.pan && inOven) bakeStep(it, dtMin);

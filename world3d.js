@@ -395,7 +395,7 @@ function buildItemModel(it) {
   } else if (k === 'tbsp' || k === 'tsp') {
     const L = sp.h, br = k === 'tbsp' ? 0.021 : 0.015;
     const hnd = box(0.008, L - br * 1.4, 0.0025, MAT.steel, 0, br * 1.4 + (L - br * 1.4) / 2, 0); add(hnd);
-    const bowl = mesh(new THREE.SphereGeometry(br, 24, 12, 0, TAU, Math.PI / 2, Math.PI / 2), MAT.steel, 0, br * 0.75, 0); bowl.scale.set(1, 0.55, 1); add(bowl);
+    const bowl = mesh(new THREE.SphereGeometry(br, 24, 12, 0, TAU, Math.PI / 2, Math.PI / 2), MAT.steelDS || (MAT.steelDS = Object.assign(MAT.steel.clone(), { side: THREE.DoubleSide })), 0, br * 0.75, 0); bowl.scale.set(1, 0.55, 1); add(bowl);
     it.parts.fill = add(mesh(new THREE.SphereGeometry(br * 0.92, 20, 10, 0, TAU, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, map: TX.speck }), 0, br * 0.75, 0, false)); it.parts.fill.scale.set(1, 0.35, 1); it.parts.fill.visible = false;
   } else if (k === 'whisk') {
     const L = sp.h; add(mesh(new THREE.CylinderGeometry(0.011, 0.009, L * 0.4, 20), MAT.steel, 0, L * 0.8, 0));
