@@ -302,7 +302,7 @@ function rebuildBake(b) {
     for (let k = 1; k <= b.sliced; k++) { const x = d.rx - k * 0.022; if (x < -d.rx + 0.01) break; tag(box(0.0025, d.h * 0.98, d.rz * 2.02, crumbM, x, d.h * 0.49, 0)); }
     b.topY = d.h;
   } else if (b.shape === 'cookies') {
-    const n = b.balls.length; b.balls.forEach((ball, i) => { const ring = i < 4 ? 0.028 : 0.07, idx = i < 4 ? i : i - 4, cnt = i < 4 ? Math.min(4, n) : Math.max(1, n - 4); const a = idx / cnt * TAU + (i < 4 ? 0.4 : 0); const r = 0.0098 * Math.cbrt(ball.g) * 0.95, sp = 1 + bk.spread * sstep(0, 0.55, bk.b); const m = mesh(new THREE.SphereGeometry(1, 24, 14), new THREE.MeshPhysicalMaterial({ map: cookieTex, roughness: 0.75, color: new THREE.Color(rgb(crustColor(bk.brown * 0.95, ball.m.color()))) }), Math.cos(a) * ring, 0.006 + (i < 4 ? 0.006 : 0), Math.sin(a) * ring); m.scale.set(r * sp, r * (0.85 - 0.45 * (sp - 1)), r * sp); tag(m); });
+    const n = b.balls.length; b.balls.forEach((ball, i) => { const top = i >= 7, ring = i === 0 ? 0 : top ? 0.045 : 0.08, idx = top ? i - 7 : i - 1, cnt = top ? Math.max(1, Math.min(5, n - 7)) : 6; const a = idx / cnt * TAU + (top ? 0.5 : 0); const r = 0.0098 * Math.cbrt(ball.g) * 0.8, sp = 1 + Math.min(0.35, bk.spread * 0.45) * sstep(0, 0.55, bk.b); const m = mesh(new THREE.SphereGeometry(1, 24, 14), new THREE.MeshPhysicalMaterial({ map: cookieTex, roughness: 0.75, color: new THREE.Color(rgb(crustColor(bk.brown * 0.95, ball.m.color()))) }), Math.cos(a) * ring, 0.006 + (top ? 0.014 : 0), Math.sin(a) * ring); m.scale.set(r * sp, r * (0.7 - 0.5 * (sp - 1)), r * sp); tag(m); });
     b.topY = 0.02;
   } else {
     const L = 0.33, W = 0.23, T = d.h, Lr = b.rolled * L, rr = 0.008 + 0.034 * Math.sqrt(b.rolled);

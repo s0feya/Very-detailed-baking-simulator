@@ -688,7 +688,7 @@ function syncItem(it) {
     const g = P.balls; while (g.children.length < it.balls.length) g.add(mesh(new THREE.SphereGeometry(1, 24, 14), new THREE.MeshPhysicalMaterial({ map: cookieTex, roughness: 0.75, sheen: 0.3 })));
     while (g.children.length > it.balls.length) g.remove(g.children[g.children.length - 1]);
     const bk = it.bake;
-    it.balls.forEach((b, i) => { const ms = g.children[i], r = 0.0098 * Math.cbrt(b.g) * 0.95; const sp = bk ? 1 + bk.spread * sstep(0, 0.55, bk.b) : 1; ms.position.set(b.x, 0.004, b.z); ms.scale.set(r * sp, r * (0.85 - 0.45 * (sp - 1)), r * sp); ms.material.color = colorOf(bk && bk.brown > 0.02 ? crustColor(bk.brown * 0.95, b.m.color()) : b.m.color()); });
+    it.balls.forEach((b, i) => { const ms = g.children[i], r = 0.0098 * Math.cbrt(b.g) * 0.8; const sp = bk ? 1 + Math.min(0.35, bk.spread * 0.45) * sstep(0, 0.55, bk.b) : 1; ms.position.set(b.x, 0.004, b.z); ms.scale.set(r * sp, r * (0.7 - 0.5 * (sp - 1)), r * sp); ms.material.color = colorOf(bk && bk.brown > 0.02 ? crustColor(bk.brown * 0.95, b.m.color()) : b.m.color()); });
   }
   if (P.fill && it.stock != null) { const max = DEF[it.kind].stock, f = clamp(it.stock / max, 0, 1), H = it.h * 0.88 * f; P.fill.visible = f > 0.002; P.fill.scale.y = Math.max(0.0001, H); P.fill.position.y = 0.005 + H / 2; }
   if (P.fill && (it.kind === 'tbsp' || it.kind === 'tsp')) { const has = it.m.total() > 0.05; P.fill.visible = has; if (has) P.fill.material.color = colorOf(it.m.color()); }
