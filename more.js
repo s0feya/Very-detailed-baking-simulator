@@ -471,7 +471,7 @@ function drawBook() {
     const tag = `${R.country.toUpperCase()} · ${R.kind === 'cold' ? 'COLD' : 'HOT'} · ${['', 'EASY', 'MEDIUM', 'HARD'][R.level || 2]}`; ctx.fillText(tag, x0 + 96, y0 + 50);
     for (let d = 0; d < 3; d++) { ctx.fillStyle = d < (R.level || 2) ? '#c4632c' : '#e2d6bb'; ctx.beginPath(); ctx.arc(x0 + 100 + ctx.measureText(tag).width + 10 + d * 11, y0 + 46, 4, 0, TAU); ctx.fill(); }
     ctx.fillStyle = '#5a5046'; ctx.font = '500 12.5px Inter, system-ui, sans-serif';
-    ctx.fillText(R.product === 'chilled' || R.product === 'mousse' ? `No oven · chill ${R.chill} min` : `${R.temp} °C · ${R.time} min · ${PAN_NAME[R.pan]}`, x0 + 96, y0 + 70);
+    ctx.fillText(R.product === 'chilled' || R.product === 'mousse' ? `No oven · chill ${R.chill} min` : R.noOven ? `No oven · ${PAN_NAME[R.pan]}` : `${R.temp} °C · ${R.time} min · ${PAN_NAME[R.pan]}`, x0 + 96, y0 + 70);
     ctx.fillStyle = '#3b3631'; ctx.font = '500 13px Inter, system-ui, sans-serif'; wrapText(R.blurb || '', 0, 0, w - 104).slice(0, 2).forEach((l, i) => ctx.fillText(l, x0 + 96, y0 + 94 + i * 18));
     ctx.fillStyle = '#8a7f72'; ctx.font = '500 11px Inter, system-ui, sans-serif'; const il = wrapText(R.lines.join(' · '), 0, 0, w - 104); ctx.fillText(il[0] + (il.length > 1 ? '…' : ''), x0 + 96, y0 + 136);
     if (recipe === R) { ctx.fillStyle = '#4c8a4a'; ctx.font = '600 11px Inter, system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('BAKING NOW', x0 + w, y0 + 30); }

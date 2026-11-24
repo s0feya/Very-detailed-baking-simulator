@@ -331,7 +331,7 @@ function drawCard(x, y, w, h, R, rot = 0, full = false, ticks = null) {
   ctx.fillStyle = '#2d3a4f'; ctx.textAlign = 'left';
   ctx.font = `700 ${34 * k}px Caveat, 'Bradley Hand', cursive`; ctx.fillText(R.name, -w / 2 + 14 * k, -h + 42 * k);
   ctx.font = `500 ${13 * k}px Inter, system-ui, sans-serif`; ctx.fillStyle = '#7b6f60';
-  ctx.textAlign = 'right'; ctx.fillText(R.chill ? `chill ${R.chill} min` : `${R.temp} °C · ${R.time} min`, w / 2 - 14 * k, -h + 40 * k); ctx.textAlign = 'left';
+  ctx.textAlign = 'right'; ctx.fillText(R.chill ? `chill ${R.chill} min` : R.noOven ? 'no oven' : `${R.temp} °C · ${R.time} min`, w / 2 - 14 * k, -h + 40 * k); ctx.textAlign = 'left';
   if (full) {
     ctx.font = `600 ${22 * k}px Caveat, cursive`;
     let ly = -h + 86 * k;
